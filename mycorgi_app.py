@@ -4,10 +4,13 @@ from views.static import static
 from views.upload_form import upload_form
 from controllers.api import api
 from database import db_session
+import string
+import random
 
 mycorgi_app = Flask(__name__)
 
 mycorgi_app.config['SERVER_NAME'] = 'corgiorgy.com'
+mycorgi_app.config['SECRET_DELETE_KEY'] = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for x in range(128))
 
 mycorgi_app.register_blueprint(party)
 mycorgi_app.register_blueprint(static)

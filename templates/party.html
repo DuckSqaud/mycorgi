@@ -69,6 +69,33 @@
       left: 0;
     }
 
+    #delete {
+      float: left;
+      padding-top: 5px;
+      padding-left: 10px;
+      font-family: verdana, sans-serif;
+      font-size: .75em;
+      font-weight: bold;
+    }
+
+    #delete a {
+      color: white;
+      text-decoration: none;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-image: -webkit-linear-gradient(180deg,#f35626,#feab3a);
+    }
+
+    #delete a:link, a:visited {
+      color: white;
+      -webkit-animation: rainbow 10s infinite linear;
+    }
+
+    #delete a:hover, a:active {
+      color: white;
+      -webkit-animation: rainbow .25s infinite linear;
+    }
+
     #follow {
       float: right;
       padding-top: 5px;
@@ -121,6 +148,9 @@
     <div class="push"></div>
   </div>
   <footer>
+    {% if delete_url %}
+    <span id="delete"><a href="//api.corgiorgy.com/delete{{ delete_url }}">delete</a></span>
+    {% endif %}
     {% if party.youtube_id %}
     <img src="//static.corgiorgy.com/img/mute.svg" id="mute" onclick="toggleSound(this);">
     {% endif %}<span id="follow"><a href="//my.corgiorgy.com">throw another party</a></span>

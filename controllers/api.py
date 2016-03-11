@@ -2,7 +2,9 @@ from flask import Blueprint, request, g, jsonify
 from models import Orgy
 from database import get_db_session
 import re
-
+import hmac
+import mycorgi_app
+import hashlib
 api = Blueprint('api', __name__, subdomain='api')
 
 YOUTUBE_REGEX = (r'(https?://)?(www\.)?'
@@ -13,6 +15,41 @@ YOUTUBE_REGEX = (r'(https?://)?(www\.)?'
 def after(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
+
+@api.route('/delete')
+def delete_party():
+    requestor_ip = request.remote_addr
+    delete_token = request.args.get('delete_token')
+    name = request.args.get('name')
+
+    if (not name) or (not delete_token) or (not requestor_ip): 
+        return 'Invalid request'
+
+    db_session = get_db_session()
+    party_to_delete = db_session.query(Orgy).filter(Orgy.name == name)\
+                                            .one_or_none()
+    if not party_to_delete:
+        return 'Invalid request'
+
+    if (not party_to_delete.creator_ip) or (party_to_delete.creator_ip == '127.0.0.1/32'):
+        return 'Invalid request'
+    else:
+        creator_ip = party_to_delete.creator_ip.replace('/32','')
+
+    # Additional sanity check
+    if creator_ip != requestor_ip:
+        return 'Invalid request'
+    
+    token_message = creator_ip + party_to_delete.name
+    valid_delete_token = hmac.new(mycorgi_app.mycorgi_app.config['SECRET_DELETE_KEY'], token_message, hashlib.sha1).hexdigest()
+
+    if delete_token == valid_delete_token:
+        db_session.delete(party_to_delete)
+        db_session.commit()
+        print 'deleted party', party_to_delete.name
+        return 'Party deleted! Make another one <a href="//my.corgiorgy.com">here</a>!'
+    else:
+        return 'Invalid request!'
 
 @api.route('/check_name', methods=['POST'])
 def check_name():
